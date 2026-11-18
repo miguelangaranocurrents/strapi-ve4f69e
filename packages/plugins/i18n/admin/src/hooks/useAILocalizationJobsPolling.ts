@@ -28,22 +28,31 @@ export const useAILocalizationJobsPolling = ({
   >(null);
 
   /**
+   * A collection type entry that hasn't been saved yet has no documentId, so there is no job to fetch.
+   * Requesting it would hit `/collection-types/:model/undefined`.
+   */
+  const skip = !model || !collectionType || (collectionType !== 'single-types' && !documentId);
+
+  /**
    * NOTE:
    * Due to a limitation with RTK query it is not possible to dynamically update the polling interval
    * @see https://github.com/reduxjs/redux-toolkit/issues/1651
    */
-  const { data: initialJobData } = useGetAILocalizationJobsByDocumentQuery({
-    documentId: documentId!,
-    model: model!,
-    collectionType: collectionType!,
-  });
+  const { data: initialJobData } = useGetAILocalizationJobsByDocumentQuery(
+    {
+      documentId: documentId!,
+      model: model!,
+      collectionType: collectionType!,
+    },
+    { skip }
+  );
 
   const shouldPoll =
     initialJobData?.data?.status === 'processing' || previousJobStatus === 'processing';
   const { data: jobData } = useGetAILocalizationJobsByDocumentQuery(
     { documentId: documentId!, model: model!, collectionType: collectionType! },
     {
-      skip: !shouldPoll,
+      skip: skip || !shouldPoll,
       pollingInterval: 1000,
     }
   );

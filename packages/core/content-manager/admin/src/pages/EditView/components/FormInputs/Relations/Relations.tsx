@@ -752,6 +752,9 @@ const RelationModalWithContext = ({
 
   React.useLayoutEffect(() => {
     setTextValue('');
+    // Clear the search query too, otherwise the list keeps being filtered by the text the
+    // user typed before selecting a relation, and the remaining relations are hidden.
+    setSearchParams((s) => ({ ...s, _q: '', page: 1 }));
   }, [fieldValue]);
 
   const handleSearch = async (search: string) => {
